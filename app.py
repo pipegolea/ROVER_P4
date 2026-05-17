@@ -9,14 +9,14 @@ app.secret_key = "rover_asme_2025_secret"
 # ── Credenciales de los 8 grupos ──────────────────────────────────────────────
 GROUPS = {
     "admin": {"password": "Proyecto4", "name": "Admin"},
-    "grupo1": {"password": "rover01__202610", "name": "Grupo1_202610"},
-    "grupo2": {"password": "rover02_202610", "name": "Grupo2_202610"},
-    "grupo3": {"password": "rover03_202610", "name": "Grupo3_202610"},
-    "grupo4": {"password": "rover04_202610", "name": "Grupo4_202610"},
-    "grupo5": {"password": "rover05_202610", "name": "Grupo5_202610"},
-    "grupo6": {"password": "rover06_202610", "name": "Grupo6_202610"},
-    "grupo7": {"password": "rover07_202610", "name": "Grupo7_202610"},
-    "grupo8": {"password": "rover08_202610", "name": "Grupo8_202610"},
+    "grupo1": {"password": "rover01_202610", "name": "grupo1_202610"},
+    "grupo2": {"password": "rover02_202610", "name": "grupo2_202610"},
+    "grupo3": {"password": "rover03_202610", "name": "grupo3_202610"},
+    "grupo4": {"password": "rover04_202610", "name": "grupo4_202610"},
+    "grupo5": {"password": "rover05_202610", "name": "grupo5_202610"},
+    "grupo6": {"password": "rover06_202610", "name": "grupo6_202610"},
+    "grupo7": {"password": "rover07_202610", "name": "grupo7_202610"},
+    "grupo8": {"password": "rover08_202610", "name": "grupo8_202610"},
 }
 DATA_DIR = "/app/data"
 DATA_FILE = f"{DATA_DIR}/resultados.csv"
