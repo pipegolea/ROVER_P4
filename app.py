@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
 import csv
 import os
 from datetime import datetime
@@ -21,24 +21,12 @@ GROUPS = {
 DATA_DIR = "/app/data"
 DATA_FILE = f"{DATA_DIR}/resultados.csv"
 
-def init_csv():
-    os.makedirs("/app/data", exist_ok=True)  # 🔥 ESTO ES LO QUE FALTA
-
-    if not os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow([
-                "Timestamp", "Grupo",
-                "Design_Score", "Grams", "Pieces",
-                "Total_Parts", "Exceptions", "AM_Parts",
-                "Width_cm", "Length_cm", "Height_cm", "Volume_cm3",
-                "Base_Score", "AM_Ratio_pct", "Final_Score",
-                "Dimension_Penalty"
-            ])
 D_TOTAL = 30.48 ** 3  # cm³
 
 # ── Crear CSV si no existe ─────────────────────────────────────────────────────
 def init_csv():
+    os.makedirs(DATA_DIR, exist_ok=True)
+
     if not os.path.exists(DATA_FILE):
         with open(DATA_FILE, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
@@ -155,6 +143,10 @@ def calculate():
         ])
 
     return jsonify(result)
+    
+@app.route("/download_csv")
+def download_csv():
+    return send_file(DATA_FILE, as_attachment=True)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
