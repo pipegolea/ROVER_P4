@@ -98,14 +98,44 @@ def index():
 
 @app.route("/login", methods=["POST"])
 def login():
-    username = request.form.get("username", "").strip().lower()
+
+    # ── Limpiar username ─────────────────────────────────────
+    username = (
+        request.form.get("username", "")
+        .strip()
+        .lower()
+        .replace(" ", "")
+    )
+
+    # ── Limpiar password ─────────────────────────────────────
     password = request.form.get("password", "").strip()
+
+    # ── Debug Railway Logs ───────────────────────────────────
+    print("========== LOGIN DEBUG ==========")
+    print("USERNAME RECIBIDO:", username)
+    print("PASSWORD RECIBIDO:", password)
+
+    # ── Buscar grupo ─────────────────────────────────────────
     group = GROUPS.get(username)
+
+    print("GROUP ENCONTRADO:", group)
+
+    # ── Validación ───────────────────────────────────────────
     if group and group["password"] == password:
-        session["group"]      = username
+
+        session["group"] = username
         session["group_name"] = group["name"]
+
+        print("LOGIN EXITOSO")
+
         return redirect(url_for("calculator"))
-    return render_template("login.html", error="Usuario o contraseña incorrectos")
+
+    print("LOGIN FALLIDO")
+
+    return render_template(
+        "login.html",
+        error="Usuario o contraseña incorrectos"
+    )
 
 @app.route("/logout")
 def logout():
