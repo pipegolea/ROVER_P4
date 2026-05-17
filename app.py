@@ -18,8 +18,22 @@ GROUPS = {
     "grupo7": {"password": "rover007", "name": "Grupo 7"},
     "grupo8": {"password": "rover008", "name": "Grupo 8"},
 }
+DATA_DIR = "/app/data"
+DATA_FILE = f"{DATA_DIR}/resultados.csv"
 
-DATA_FILE = "/app/data/resultados.csv"
+def init_csv():
+    os.makedirs(DATA_DIR, exist_ok=True)  # 🔥 CLAVE
+    if not os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "Timestamp", "Grupo",
+                "Design_Score", "Grams", "Pieces",
+                "Total_Parts", "Exceptions", "AM_Parts",
+                "Width_cm", "Length_cm", "Height_cm", "Volume_cm3",
+                "Base_Score", "AM_Ratio_pct", "Final_Score",
+                "Dimension_Penalty"
+            ])
 D_TOTAL = 30.48 ** 3  # cm³
 
 # ── Crear CSV si no existe ─────────────────────────────────────────────────────
