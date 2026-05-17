@@ -8,7 +8,7 @@ app.secret_key = "rover_asme_2025_secret"
 
 # ── Credenciales de los 8 grupos ──────────────────────────────────────────────
 GROUPS = {
-    "admin": {"password": "Proyecto4", "name": "Admin"}
+    "admin": {"password": "Proyecto4", "name": "Admin"},
     "grupo1": {"password": "rover001", "name": "Grupo 1"},
     "grupo2": {"password": "rover002", "name": "Grupo 2"},
     "grupo3": {"password": "rover003", "name": "Grupo 3"},
