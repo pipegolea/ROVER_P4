@@ -19,7 +19,7 @@ GROUPS = {
     "grupo8": {"password": "rover008", "name": "Grupo 8"},
 }
 
-DATA_FILE = "resultados.csv"
+DATA_FILE = "/app/data/resultados.csv"
 D_TOTAL = 30.48 ** 3  # cm³
 
 # ── Crear CSV si no existe ─────────────────────────────────────────────────────
