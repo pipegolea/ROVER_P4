@@ -22,7 +22,8 @@ DATA_DIR = "/app/data"
 DATA_FILE = f"{DATA_DIR}/resultados.csv"
 
 def init_csv():
-    os.makedirs(DATA_DIR, exist_ok=True)  # 🔥 CLAVE
+    os.makedirs("/app/data", exist_ok=True)  # 🔥 ESTO ES LO QUE FALTA
+
     if not os.path.exists(DATA_FILE):
         with open(DATA_FILE, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
