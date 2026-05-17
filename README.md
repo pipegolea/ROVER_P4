@@ -7,3 +7,5 @@ Proyecto 4 - 3710
 Profesor: Alejandro Marañon
 
 Asistente Graduado: Andres Vargas
+
+Monitor: David Diaz
