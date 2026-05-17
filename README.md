@@ -1,5 +1,5 @@
 # R.O.V.E.R — ASME Arena Challenge
-Universidad de los Andes
+Departamento de Ingenieria Mecanica (Universidad de los Andes)
 
 Proyecto 4 - 3710
 
