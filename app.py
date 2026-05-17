@@ -4,7 +4,9 @@ import os
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "rover_asme_2025_secret"
+# Lee SECRET_KEY desde variable de entorno (configúrala en Railway → Variables)
+# Si no existe, usa el valor por defecto (funciona pero menos seguro)
+app.secret_key = os.environ.get("SECRET_KEY", "rover_asme_2025_secret_key_xyz!")
 
 # ── Credenciales de los 8 grupos ──────────────────────────────────────────────
 GROUPS = {
@@ -18,14 +20,20 @@ GROUPS = {
     "grupo7": {"password": "rover07_202610", "name": "grupo7"},
     "grupo8": {"password": "rover08_202610", "name": "grupo8"},
 }
-DATA_DIR = "/app/data"
-DATA_FILE = f"{DATA_DIR}/resultados.csv"
+
+# ── Ruta de datos: usa /tmp que SIEMPRE existe en Railway ─────────────────────
+# Para persistencia real, agrega un Volume en Railway y apunta a /app/data
+DATA_DIR = os.environ.get("DATA_DIR", "/tmp")
+DATA_FILE = os.path.join(DATA_DIR, "resultados.csv")
 
 D_TOTAL = 30.48 ** 3  # cm³
 
 # ── Crear CSV si no existe ─────────────────────────────────────────────────────
 def init_csv():
-    os.makedirs(DATA_DIR, exist_ok=True)
+    try:
+        os.makedirs(DATA_DIR, exist_ok=True)
+    except PermissionError:
+        pass  # /tmp ya existe, otros paths pueden fallar en Railway
 
     if not os.path.exists(DATA_FILE):
         with open(DATA_FILE, "w", newline="", encoding="utf-8") as f:
