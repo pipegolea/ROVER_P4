@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R.O.V.E.R — Ranking en Vivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #030712;
+    --panel:   #080f1e;
+    --panel2:  #0b1526;
+    --border:  #0f3460;
+    --accent1: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7fff6b;
+    --accent4: #ffd700;
+    --text:    #c8e6ff;
+    --dim:     #3a5a7a;
+    --glow1:   0 0 20px rgba(0,212,255,.4);
+    --glow2:   0 0 20px rgba(255,107,53,.4);
+    --glow3:   0 0 20px rgba(127,255,107,.4);
+    --glow4:   0 0 30px rgba(255,215,0,.5);
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    background:var(--bg); color:var(--text);
+    font-family:'Exo 2',sans-serif;
+    min-height:100vh; overflow-x:hidden; position:relative;
+  }
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);
+    background-size:40px 40px;
+  }
+  body::after {
+    content:''; position:fixed; inset:0; pointer-events:none;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.12) 2px,rgba(0,0,0,.12) 4px);
+  }
+
+  /* ── Topbar ── */
+  .topbar {
+    position:sticky; top:0; z-index:100;
+    background:rgba(3,7,18,.92); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+    padding:.75rem 2rem;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .topbar-left { display:flex; align-items:center; gap:1rem; }
+  .logo-sm { font-family:'Orbitron',monospace; font-weight:900; font-size:1rem; color:var(--accent1); text-shadow:var(--glow1); letter-spacing:.15em; }
+  .divider-v { width:1px; height:20px; background:var(--border); }
+  .session-tag { font-family:'Share Tech Mono',monospace; font-size:.7rem; color:var(--accent3); letter-spacing:.15em; }
+  .nav-btn {
+    font-family:'Share Tech Mono',monospace; font-size:.65rem; letter-spacing:.15em;
+    color:var(--dim); text-decoration:none; padding:.35rem .7rem;
+    border:1px solid var(--border); border-radius:2px; transition:all .2s; text-transform:uppercase;
+  }
+  .nav-btn:hover { border-color:var(--accent1); color:var(--accent1); }
+  .nav-btn.gold { border-color:rgba(255,215,0,.4); color:var(--accent4); }
+  .nav-btn.gold:hover { border-color:var(--accent4); box-shadow:var(--glow4); }
+
+  /* ── Layout ── */
+  .main { max-width:1100px; margin:0 auto; padding:2rem 1.5rem 4rem; position:relative; z-index:10; }
+
+  /* ── Live indicator ── */
+  .live-badge {
+    display:inline-flex; align-items:center; gap:.5rem;
+    font-family:'Share Tech Mono',monospace; font-size:.65rem;
+    color:var(--accent3); letter-spacing:.2em; text-transform:uppercase;
+    padding:.3rem .7rem;
+    background:rgba(127,255,107,.05); border:1px solid rgba(127,255,107,.2); border-radius:2px;
+    margin-bottom:1.5rem;
+  }
+  .live-dot { width:6px; height:6px; border-radius:50%; background:var(--accent3); animation:livePulse 1s ease-in-out infinite; }
+  @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.6)} }
+
+  /* ── Page title ── */
+  .page-title { text-align:center; margin-bottom:2rem; }
+  .page-title h1 {
+    font-family:'Orbitron',monospace;
+    font-size:clamp(1.6rem,5vw,2.5rem); font-weight:900;
+    color:#fff; letter-spacing:.1em; text-shadow:var(--glow4);
+  }
+  .page-title p { font-family:'Share Tech Mono',monospace; font-size:.7rem; color:var(--accent2); letter-spacing:.3em; margin-top:.4rem; text-transform:uppercase; }
+
+  /* ── Admin upload panel ── */
+  .admin-panel {
+    background:var(--panel);
+    border:1px solid rgba(255,107,53,.3);
+    border-radius:4px; padding:1.5rem; margin-bottom:2rem;
+    position:relative;
+  }
+  .admin-panel::before {
+    content:''; position:absolute; top:-1px; left:10%; right:10%; height:2px;
+    background:linear-gradient(90deg,transparent,var(--accent2),transparent);
+  }
+  .admin-title {
+    font-family:'Orbitron',monospace; font-size:.75rem; font-weight:700;
+    color:var(--accent2); letter-spacing:.2em; text-transform:uppercase;
+    margin-bottom:1.2rem; display:flex; align-items:center; gap:.6rem;
+  }
+  .admin-title::before { content:''; display:block; width:3px; height:14px; background:var(--accent2); box-shadow:var(--glow2); border-radius:1px; }
+
+  .admin-grid { display:grid; grid-template-columns:1fr 1fr auto auto; gap:.8rem; align-items:end; }
+  @media(max-width:640px){ .admin-grid{ grid-template-columns:1fr 1fr; } }
+
+  .field label {
+    display:block; font-family:'Share Tech Mono',monospace;
+    font-size:.6rem; color:var(--dim); letter-spacing:.2em; text-transform:uppercase; margin-bottom:.35rem;
+  }
+  select, input[type=number] {
+    width:100%; padding:.65rem .9rem;
+    background:rgba(0,212,255,.02); border:1px solid var(--border); border-radius:2px;
+    color:var(--text); font-family:'Share Tech Mono',monospace; font-size:.88rem; outline:none;
+    transition:border-color .2s, box-shadow .2s; -moz-appearance:textfield;
+  }
+  input[type=number]::-webkit-inner-spin-button { display:none; }
+  select:focus, input[type=number]:focus { border-color:var(--accent2); box-shadow:var(--glow2); }
+  select option { background:var(--panel); }
+
+  .btn {
+    padding:.65rem 1.1rem; border-radius:2px; cursor:pointer;
+    font-family:'Orbitron',monospace; font-size:.7rem; font-weight:700;
+    letter-spacing:.15em; text-transform:uppercase;
+    border:1px solid; position:relative; overflow:hidden;
+    transition:color .2s, box-shadow .2s; white-space:nowrap;
+  }
+  .btn::before {
+    content:''; position:absolute; inset:0;
+    transform:translateX(-101%); transition:transform .3s cubic-bezier(.16,1,.3,1);
+  }
+  .btn:hover { box-shadow:var(--glow2); }
+  .btn:hover::before { transform:translateX(0); }
+  .btn span { position:relative; z-index:1; }
+
+  .btn-update { border-color:var(--accent2); color:var(--accent2); }
+  .btn-update::before { background:var(--accent2); }
+  .btn-update:hover { color:#000; }
+
+  .btn-reset { border-color:var(--dim); color:var(--dim); }
+  .btn-reset::before { background:var(--dim); }
+  .btn-reset:hover { color:#000; box-shadow:none; }
+
+  .toast {
+    margin-top:.8rem; padding:.5rem .9rem;
+    font-family:'Share Tech Mono',monospace; font-size:.7rem; border-radius:2px;
+    display:none; animation:fadeIn .3s ease;
+  }
+  @keyframes fadeIn{ from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+  .toast.ok  { background:rgba(127,255,107,.07); border:1px solid rgba(127,255,107,.25); color:var(--accent3); }
+  .toast.err { background:rgba(255,107,53,.07);  border:1px solid rgba(255,107,53,.25);  color:var(--accent2); }
+
+  /* ── Leaderboard table ── */
+  .board {
+    background:var(--panel); border:1px solid var(--border); border-radius:4px; overflow:hidden;
+    position:relative;
+  }
+  .board::before {
+    content:''; position:absolute; top:-1px; left:0; right:0; height:2px;
+    background:linear-gradient(90deg,var(--accent4),var(--accent1),var(--accent2));
+  }
+
+  .board-header {
+    display:grid; grid-template-columns:60px 1fr 200px 140px;
+    padding:.75rem 1.2rem;
+    border-bottom:1px solid var(--border);
+    font-family:'Share Tech Mono',monospace; font-size:.6rem;
+    color:var(--dim); letter-spacing:.2em; text-transform:uppercase;
+  }
+  @media(max-width:600px){ .board-header{ grid-template-columns:50px 1fr 120px; } .board-header .col-upd{display:none;} }
+
+  .board-body { }
+
+  .board-row {
+    display:grid; grid-template-columns:60px 1fr 200px 140px;
+    padding:.9rem 1.2rem; border-bottom:1px solid rgba(15,52,96,.5);
+    align-items:center; transition:background .25s, transform .3s;
+    position:relative; overflow:hidden;
+  }
+  .board-row:last-child { border-bottom:none; }
+  .board-row:hover { background:rgba(0,212,255,.03); }
+  @media(max-width:600px){ .board-row{ grid-template-columns:50px 1fr 120px; } .board-row .col-upd{display:none;} }
+
+  /* Medal rows */
+  .board-row.rank-1 { background:linear-gradient(90deg,rgba(255,215,0,.07),transparent); }
+  .board-row.rank-2 { background:linear-gradient(90deg,rgba(192,192,192,.05),transparent); }
+  .board-row.rank-3 { background:linear-gradient(90deg,rgba(205,127,50,.05),transparent); }
+
+  /* Flash animation on update */
+  .board-row.flash { animation:flashRow .7s ease; }
+  @keyframes flashRow {
+    0%  { background:rgba(0,212,255,.18); }
+    100%{ background:transparent; }
+  }
+  .board-row.rank-1.flash { animation:flashRowGold .7s ease; }
+  @keyframes flashRowGold {
+    0%  { background:rgba(255,215,0,.3); }
+    100%{ background:linear-gradient(90deg,rgba(255,215,0,.07),transparent); }
+  }
+
+  .col-pos {
+    font-family:'Orbitron',monospace; font-size:1rem; font-weight:900;
+    text-align:center;
+  }
+  .medal-1 { color:var(--accent4); text-shadow:var(--glow4); }
+  .medal-2 { color:#c0c0c0; text-shadow:0 0 10px rgba(192,192,192,.5); }
+  .medal-3 { color:#cd7f32; text-shadow:0 0 10px rgba(205,127,50,.5); }
+  .col-pos.plain { color:var(--dim); font-size:.85rem; }
+
+  .col-team {
+    font-family:'Orbitron',monospace; font-size:.85rem; font-weight:700;
+    color:var(--text); letter-spacing:.05em; text-transform:uppercase;
+  }
+  .col-team small { display:block; font-family:'Share Tech Mono',monospace; font-size:.6rem; color:var(--dim); letter-spacing:.1em; font-weight:400; margin-top:.15rem; }
+
+  .col-score {
+    font-family:'Orbitron',monospace; font-size:1.2rem; font-weight:900;
+    text-align:right;
+  }
+  .score-1 { color:var(--accent4); text-shadow:var(--glow4); }
+  .score-2 { color:#c0c0c0; }
+  .score-3 { color:#cd7f32; }
+  .score-rest { color:var(--accent1); }
+  .score-zero { color:var(--dim); font-size:.9rem; }
+
+  .col-upd {
+    font-family:'Share Tech Mono',monospace; font-size:.62rem;
+    color:var(--dim); text-align:right; letter-spacing:.05em;
+  }
+
+  /* Bar */
+  .bar-wrap { position:absolute; bottom:0; left:60px; right:0; height:2px; }
+  .bar-fill { height:100%; background:var(--accent1); opacity:.3; transition:width .8s cubic-bezier(.16,1,.3,1); }
+  .rank-1 .bar-fill { background:var(--accent4); opacity:.5; }
+
+  /* Empty state */
+  .empty-state {
+    text-align:center; padding:3rem 1rem;
+    font-family:'Share Tech Mono',monospace; font-size:.8rem; color:var(--dim); letter-spacing:.1em;
+  }
+  .empty-state .icon { font-size:2.5rem; margin-bottom:.8rem; opacity:.4; }
+</style>
+</head>
+<body>
+
+<!-- ── Topbar ── -->
+<nav class="topbar">
+  <div class="topbar-left">
+    <span class="logo-sm">R.O.V.E.R</span>
+    <div class="divider-v"></div>
+    <span class="session-tag">▶ {{ group_name }} CONECTADO</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:.6rem;">
+    {% if not is_admin %}
+    <a href="/calculator" class="nav-btn">← Calculadora</a>
+    {% endif %}
+    <a href="/logout" class="nav-btn">Cerrar Sesión ×</a>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- Title -->
+  <div class="page-title">
+    <h1>🏆 RANKING EN VIVO</h1>
+    <p>ASME Arena Challenge · Concurso Rovers 2025</p>
+  </div>
+
+  <div class="live-badge"><div class="live-dot"></div>ACTUALIZACIÓN EN TIEMPO REAL — SSE ACTIVO</div>
+
+  <!-- ── PANEL ADMIN (solo visible si es admin) ── -->
+  {% if is_admin %}
+  <div class="admin-panel">
+    <div class="admin-title">Panel de Control — Subir Puntajes</div>
+    <div class="admin-grid">
+      <div class="field">
+        <label>Equipo</label>
+        <select id="adminTeam">
+          <option value="">— Seleccionar —</option>
+          <option value="grupo1">Grupo 1</option>
+          <option value="grupo2">Grupo 2</option>
+          <option value="grupo3">Grupo 3</option>
+          <option value="grupo4">Grupo 4</option>
+          <option value="grupo5">Grupo 5</option>
+          <option value="grupo6">Grupo 6</option>
+          <option value="grupo7">Grupo 7</option>
+          <option value="grupo8">Grupo 8</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Puntaje Final</label>
+        <input type="number" id="adminScore" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="field" style="padding-top:.35rem;">
+        <label>&nbsp;</label>
+        <button class="btn btn-update" onclick="submitScore()"><span>⬆ Subir Puntaje</span></button>
+      </div>
+      <div class="field" style="padding-top:.35rem;">
+        <label>&nbsp;</label>
+        <button class="btn btn-reset" onclick="resetScore()"><span>↺ Resetear</span></button>
+      </div>
+    </div>
+    <div id="toast" class="toast"></div>
+  </div>
+  {% endif %}
+
+  <!-- ── LEADERBOARD ── -->
+  <div class="board">
+    <div class="board-header">
+      <div class="col-pos">#</div>
+      <div>Equipo</div>
+      <div style="text-align:right">Puntaje</div>
+      <div class="col-upd" style="text-align:right">Última actualización</div>
+    </div>
+    <div class="board-body" id="boardBody">
+      {% for row in ranking %}
+      {% set pos = loop.index %}
+      <div class="board-row {{ 'rank-' ~ pos if pos <= 3 else 'rank-rest' }}" id="row-{{ row.team }}">
+        <div class="col-pos {% if pos == 1 %}medal-1{% elif pos == 2 %}medal-2{% elif pos == 3 %}medal-3{% else %}plain{% endif %}">
+          {% if pos == 1 %}🥇{% elif pos == 2 %}🥈{% elif pos == 3 %}🥉{% else %}{{ pos }}{% endif %}
+        </div>
+        <div class="col-team">
+          {{ row.team | upper }}
+          <small>Posición {{ pos }} de 8</small>
+        </div>
+        <div class="col-score {% if pos == 1 %}score-1{% elif pos == 2 %}score-2{% elif pos == 3 %}score-3{% elif row.score == 0 %}score-zero{% else %}score-rest{% endif %}">
+          {% if row.score == 0 %}— pts{% else %}{{ '{:,.0f}'.format(row.score) }} pts{% endif %}
+        </div>
+        <div class="col-upd">{% if row.updated %}{{ row.updated }}{% else %}Sin datos{% endif %}</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:0%"></div></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Jinja enumerate filter workaround ────────────────────────────────────────
+// (el filtro enumerate no existe en Jinja2 por defecto, usamos el índice loop)
+
+// ── SSE — escucha actualizaciones en tiempo real ──────────────────────────────
+const evtSource = new EventSource("/stream/ranking");
+
+evtSource.onmessage = function(e) {
+  const ranking = JSON.parse(e.data);
+  renderBoard(ranking);
+};
+
+evtSource.onerror = function() {
+  console.warn("SSE desconectado, reconectando...");
+};
+
+// ── Render del leaderboard ────────────────────────────────────────────────────
+function renderBoard(ranking) {
+  const maxScore = Math.max(...ranking.map(r => r.score), 1);
+  const body = document.getElementById("boardBody");
+  body.innerHTML = "";
+
+  ranking.forEach((row, i) => {
+    const pos    = i + 1;
+    const pct    = maxScore > 0 ? (row.score / maxScore) * 100 : 0;
+    const medal  = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : pos;
+    const posClass = pos === 1 ? "medal-1" : pos === 2 ? "medal-2" : pos === 3 ? "medal-3" : "plain";
+    const scoreClass = pos === 1 ? "score-1" : pos === 2 ? "score-2" : pos === 3 ? "score-3" : row.score === 0 ? "score-zero" : "score-rest";
+    const rankClass  = pos <= 3 ? `rank-${pos}` : "rank-rest";
+    const scoreText  = row.score === 0 ? "— pts" : Number(row.score).toLocaleString("es") + " pts";
+    const updText    = row.updated || "Sin datos";
+
+    const div = document.createElement("div");
+    div.className = `board-row ${rankClass}`;
+    div.id = `row-${row.team}`;
+    div.innerHTML = `
+      <div class="col-pos ${posClass}">${medal}</div>
+      <div class="col-team">${row.team.toUpperCase()}<small>Posición ${pos} de 8</small></div>
+      <div class="col-score ${scoreClass}">${scoreText}</div>
+      <div class="col-upd">${updText}</div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:0%"></div></div>
+    `;
+    body.appendChild(div);
+
+    // Animar barra
+    setTimeout(() => {
+      const bar = div.querySelector(".bar-fill");
+      if (bar) bar.style.width = pct + "%";
+    }, 50);
+
+    // Flash al actualizar
+    div.classList.add("flash");
+    setTimeout(() => div.classList.remove("flash"), 800);
+  });
+}
+
+// ── Admin — subir puntaje ─────────────────────────────────────────────────────
+{% if is_admin %}
+async function submitScore() {
+  const team  = document.getElementById("adminTeam").value;
+  const score = parseFloat(document.getElementById("adminScore").value);
+  if (!team)        { showToast("Selecciona un equipo", "err"); return; }
+  if (isNaN(score)) { showToast("Ingresa un puntaje válido", "err"); return; }
+
+  const resp = await fetch("/admin/update_score", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({team, score})
+  });
+  const data = await resp.json();
+  if (data.ok) {
+    showToast(`✓ Puntaje de ${team.toUpperCase()} actualizado a ${score.toLocaleString("es")} pts`, "ok");
+    document.getElementById("adminScore").value = "";
+  } else {
+    showToast("Error: " + (data.error || "desconocido"), "err");
+  }
+}
+
+async function resetScore() {
+  const team = document.getElementById("adminTeam").value;
+  if (!team) { showToast("Selecciona un equipo para resetear", "err"); return; }
+  if (!confirm(`¿Resetear puntaje de ${team.toUpperCase()} a 0?`)) return;
+
+  const resp = await fetch("/admin/reset_score", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({team})
+  });
+  const data = await resp.json();
+  if (data.ok) {
+    showToast(`↺ Puntaje de ${team.toUpperCase()} reseteado`, "ok");
+  } else {
+    showToast("Error: " + (data.error || "desconocido"), "err");
+  }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className   = "toast " + type;
+  t.style.display = "block";
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.display = "none"; }, 4000);
+}
+{% endif %}
+
+// ── Render inicial con barras animadas ────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", () => {
+  const rows = document.querySelectorAll(".board-row");
+  const scores = Array.from(rows).map(r => {
+    const txt = r.querySelector(".col-score")?.textContent || "0";
+    return parseFloat(txt.replace(/[^\d.]/g,"")) || 0;
+  });
+  const maxS = Math.max(...scores, 1);
+  rows.forEach((row, i) => {
+    const pct = (scores[i] / maxS) * 100;
+    const bar = row.querySelector(".bar-fill");
+    if (bar) setTimeout(() => { bar.style.width = pct + "%"; }, 100 + i * 60);
+  });
+});
+</script>
+</body>
+</html>
