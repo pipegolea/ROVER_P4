@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -152,10 +151,6 @@
   .col-team { font-family:'Orbitron',monospace; font-size:.85rem; font-weight:700; color:var(--text); text-transform:uppercase; }
   .col-score { font-family:'Orbitron',monospace; font-size:1.2rem; font-weight:900; text-align:right; color:var(--accent1); }
   .score-1 { color:var(--accent4); text-shadow:var(--glow4); }
-
-  /* Modal Config */
-  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:1000; align-items:center; justify-content:center; padding:1rem; }
-  .modal-card { background:var(--panel); border:1px solid var(--accent1); border-radius:4px; max-width:450px; width:100%; padding:1.5rem; }
 </style>
 </head>
 <body>
@@ -168,15 +163,14 @@
     <span class="session-tag">▶ ARENA CHALLENGE</span>
   </div>
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('calc')">⚡ Calculadora</button>
-    <button class="tab-btn" onclick="switchTab('ranking')">🏆 Ranking en Vivo</button>
-    <button class="tab-btn" style="border-color:var(--dim); color:var(--dim)" onclick="openConfig()">⚙️</button>
+    <button class="tab-btn active" id="btn-calc" onclick="switchTab('calc')">⚡ Calculadora</button>
+    <button class="tab-btn" id="btn-ranking" onclick="switchTab('ranking')">🏆 Ranking en Vivo</button>
   </div>
 </nav>
 
 <div class="main">
 
-  <!-- ── TAB 1: CALCULADORA DE PUNTAJE DE LA COMPETENCIA ── -->
+  <!-- ── TAB 1: CALCULADORA ── -->
   <div id="tab-calc">
     <div class="page-title">
       <h1>CALCULADORA DE PUNTAJE</h1>
@@ -301,40 +295,39 @@
 
 </div>
 
-<!-- ── MODAL SUPABASE CONFIG ── -->
-<div class="modal" id="cfgModal">
-  <div class="modal-card">
-    <div class="panel-title">Conectar Supabase en Tiempo Real</div>
-    <div class="field"><label>Supabase URL</label><input type="text" id="cfgUrl" placeholder="https://xyz.supabase.co"></div>
-    <div class="field"><label>Supabase Anon Key</label><input type="text" id="cfgKey" placeholder="eyJhbGciOi..."></div>
-    <button class="btn-calc" onclick="saveConfig()">Guardar y Conectar</button>
-    <button class="btn-calc" style="border-color:var(--accent2); color:var(--accent2); margin-top:.5rem;" onclick="closeConfig()">Cerrar</button>
-  </div>
-</div>
-
 <script>
+// ⚠️ CONEXIÓN AUTOMÁTICA DE SUPABASE (CAMBIA TU_PROJECT_ID POR TU ID REAL)
+const SUPABASE_URL = "https://zyahhkdcobobyewqfvzs.supabase.co";
+const SUPABASE_KEY = "sb_publishable_4q5zl-_0tko9ITl6SY5Ilg_NexMD9Pp";
+
 let rankingData = [];
 let supabaseClient = null;
 const VOL_LIMIT = 28316.85;
 
 window.addEventListener("DOMContentLoaded", () => {
-  initSupabase();
+  if (window.supabase) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // Escuchar actualizaciones en tiempo real
+    supabaseClient
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ranking_rover' }, () => {
+        loadData();
+      })
+      .subscribe();
+  }
   loadData();
 });
 
-function initSupabase() {
-  const url = localStorage.getItem("sp_url");
-  const key = localStorage.getItem("sp_key");
-  if(url && key && window.supabase) {
-    supabaseClient = window.supabase.createClient(url, key);
-  }
-}
-
 async function loadData() {
-  if(supabaseClient) {
+  if (supabaseClient) {
     try {
       const { data, error } = await supabaseClient.from('ranking_rover').select('*');
-      if(!error && data) { rankingData = data; renderRanking(); return; }
+      if (!error && data) {
+        rankingData = data;
+        renderRanking();
+        return;
+      }
     } catch(e) {}
   }
   rankingData = JSON.parse(localStorage.getItem("rover_ranking") || "[]");
@@ -344,9 +337,8 @@ async function loadData() {
 function switchTab(tab) {
   document.getElementById("tab-calc").style.display = tab === 'calc' ? 'block' : 'none';
   document.getElementById("tab-ranking").style.display = tab === 'ranking' ? 'block' : 'none';
-  const btns = document.querySelectorAll(".tab-btn");
-  btns[0].classList.toggle("active", tab === 'calc');
-  btns[1].classList.toggle("active", tab === 'ranking');
+  document.getElementById("btn-calc").classList.toggle("active", tab === 'calc');
+  document.getElementById("btn-ranking").classList.toggle("active", tab === 'ranking');
 }
 
 function calculateAndSave() {
@@ -361,7 +353,6 @@ function calculateAndSave() {
   const length = parseFloat(document.getElementById("length").value) || 0;
   const height = parseFloat(document.getElementById("height").value) || 0;
 
-  // Cálculo de volumen y penalizaciones
   const vol = width * length * height;
   let penaltyApplied = false;
   let designUsed = design;
@@ -379,7 +370,6 @@ function calculateAndSave() {
   const amRatio = Math.min(1.0, Math.max(0, am_parts / effParts));
   const finalScore = Math.round(amRatio * baseScore);
 
-  // Mostrar panel de resultados
   document.getElementById("r_design").textContent = Math.round(designUsed).toLocaleString("es");
   document.getElementById("r_grams").textContent = gramsPts.toLocaleString("es");
   document.getElementById("r_pieces").textContent = piecesPts.toLocaleString("es");
@@ -390,7 +380,6 @@ function calculateAndSave() {
   document.getElementById("penaltyWarn").style.display = penaltyApplied ? "block" : "none";
   document.getElementById("results").style.display = "block";
 
-  // Guardar en el Ranking
   saveToRanking(team, finalScore);
 }
 
@@ -402,7 +391,7 @@ async function saveToRanking(team, score) {
 
   localStorage.setItem("rover_ranking", JSON.stringify(rankingData));
 
-  if(supabaseClient) {
+  if (supabaseClient) {
     await supabaseClient.from('ranking_rover').upsert(item, { onConflict: 'team' });
   }
 
@@ -436,16 +425,6 @@ function renderRanking() {
     `;
     body.appendChild(div);
   });
-}
-
-function openConfig() { document.getElementById("cfgModal").style.display = "flex"; }
-function closeConfig() { document.getElementById("cfgModal").style.display = "none"; }
-function saveConfig() {
-  localStorage.setItem("sp_url", document.getElementById("cfgUrl").value.trim());
-  localStorage.setItem("sp_key", document.getElementById("cfgKey").value.trim());
-  initSupabase();
-  closeConfig();
-  loadData();
 }
 </script>
 </body>
