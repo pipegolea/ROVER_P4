@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ABET — Evaluación de Presentaciones Académicas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg:      #030712;
+    --panel:   #080f1e;
+    --panel2:  #0b1526;
+    --border:  #0f3460;
+    --accent1: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7fff6b;
+    --accent4: #ffd700;
+    --text:    #c8e6ff;
+    --dim:     #3a5a7a;
+    --glow1:   0 0 20px rgba(0,212,255,.4);
+    --glow2:   0 0 20px rgba(255,107,53,.4);
+    --glow3:   0 0 20px rgba(127,255,107,.4);
+    --glow4:   0 0 30px rgba(255,215,0,.5);
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    background:var(--bg); color:var(--text);
+    font-family:'Exo 2',sans-serif;
+    min-height:100vh; overflow-x:hidden; position:relative;
+  }
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);
+    background-size:40px 40px;
+  }
+  body::after {
+    content:''; position:fixed; inset:0; pointer-events:none;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.12) 2px,rgba(0,0,0,.12) 4px);
+  }
+
+  /* ── Topbar ── */
+  .topbar {
+    position:sticky; top:0; z-index:100;
+    background:rgba(3,7,18,.92); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+    padding:.75rem 2rem;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .topbar-left { display:flex; align-items:center; gap:1rem; }
+  .logo-sm { font-family:'Orbitron',monospace; font-weight:900; font-size:1.1rem; color:var(--accent1); text-shadow:var(--glow1); letter-spacing:.15em; }
+  .divider-v { width:1px; height:20px; background:var(--border); }
+  .session-tag { font-family:'Share Tech Mono',monospace; font-size:.7rem; color:var(--accent3); letter-spacing:.15em; }
+  
+  .nav-tabs { display:flex; gap:.5rem; }
+  .tab-btn {
+    font-family:'Orbitron',monospace; font-size:.7rem; font-weight:700; letter-spacing:.15em;
+    color:var(--dim); background:transparent; padding:.5rem 1rem;
+    border:1px solid var(--border); border-radius:2px; cursor:pointer; transition:all .2s; text-transform:uppercase;
+  }
+  .tab-btn:hover { border-color:var(--accent1); color:var(--accent1); }
+  .tab-btn.active { border-color:var(--accent1); color:#000; background:var(--accent1); box-shadow:var(--glow1); }
+
+  /* ── Layout ── */
+  .main { max-width:1100px; margin:0 auto; padding:2rem 1.5rem 4rem; position:relative; z-index:10; }
+
+  /* ── Page title ── */
+  .page-title { text-align:center; margin-bottom:2rem; }
+  .page-title h1 {
+    font-family:'Orbitron',monospace;
+    font-size:clamp(1.5rem,4vw,2.3rem); font-weight:900;
+    color:#fff; letter-spacing:.1em; text-shadow:var(--glow1);
+  }
+  .page-title p { font-family:'Share Tech Mono',monospace; font-size:.7rem; color:var(--accent2); letter-spacing:.3em; margin-top:.4rem; text-transform:uppercase; }
+
+  /* ── Live indicator ── */
+  .live-badge {
+    display:inline-flex; align-items:center; gap:.5rem;
+    font-family:'Share Tech Mono',monospace; font-size:.65rem;
+    color:var(--accent3); letter-spacing:.2em; text-transform:uppercase;
+    padding:.3rem .7rem;
+    background:rgba(127,255,107,.05); border:1px solid rgba(127,255,107,.2); border-radius:2px;
+    margin-bottom:1.5rem;
+  }
+  .live-dot { width:6px; height:6px; border-radius:50%; background:var(--accent3); animation:livePulse 1s ease-in-out infinite; }
+  @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.6)} }
+
+  /* ── Panels & Cards ── */
+  .panel {
+    background:var(--panel); border:1px solid var(--border); border-radius:4px;
+    padding:1.5rem; margin-bottom:1.5rem; position:relative;
+    box-shadow: 0 0 40px rgba(0,0,0,.5);
+  }
+  .panel::before {
+    content:''; position:absolute; top:-1px; left:10%; right:10%; height:2px;
+    background:linear-gradient(90deg,transparent,var(--accent1),transparent);
+  }
+  .panel-title {
+    font-family:'Orbitron',monospace; font-size:.8rem; font-weight:700;
+    color:var(--accent1); letter-spacing:.2em; text-transform:uppercase;
+    margin-bottom:1.2rem; display:flex; align-items:center; gap:.6rem;
+  }
+  .panel-title::before { content:''; display:block; width:3px; height:14px; background:var(--accent1); box-shadow:var(--glow1); border-radius:1px; }
+
+  /* ── Form Controls ── */
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+  @media(max-width:640px){ .grid-2 { grid-template-columns:1fr; } }
+
+  .field { margin-bottom:1.2rem; }
+  label {
+    display:block; font-family:'Share Tech Mono',monospace;
+    font-size:.65rem; color:var(--dim); letter-spacing:.2em; text-transform:uppercase; margin-bottom:.4rem;
+  }
+  select, input[type=text] {
+    width:100%; padding:.7rem 1rem;
+    background:rgba(0,212,255,.02); border:1px solid var(--border); border-radius:2px;
+    color:var(--text); font-family:'Share Tech Mono',monospace; font-size:.9rem; outline:none;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  select:focus, input[type=text]:focus { border-color:var(--accent1); box-shadow:var(--glow1); }
+  select option { background:var(--panel); color:var(--text); }
+
+  /* Slider Styling */
+  .slider-container {
+    background:var(--panel2); border:1px solid var(--border); border-radius:3px; padding:1rem; margin-bottom:1rem;
+  }
+  .slider-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
+  .slider-title { font-family:'Share Tech Mono',monospace; font-size:.75rem; color:var(--text); }
+  .slider-val { font-family:'Orbitron',monospace; font-size:1.1rem; font-weight:900; color:var(--accent1); text-shadow:var(--glow1); }
+  
+  input[type=range] {
+    -webkit-appearance:none; width:100%; background:var(--border); height:6px; border-radius:3px; outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--accent1);
+    box-shadow:var(--glow1); cursor:pointer; transition:transform .1s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
+
+  /* Buttons */
+  .btn {
+    width:100%; padding:.85rem; border-radius:2px; cursor:pointer;
+    font-family:'Orbitron',monospace; font-size:.75rem; font-weight:700;
+    letter-spacing:.15em; text-transform:uppercase;
+    border:1px solid; position:relative; overflow:hidden;
+    transition:color .2s, box-shadow .2s;
+  }
+  .btn-save { border-color:var(--accent1); color:var(--accent1); background:transparent; }
+  .btn-save:hover { color:#000; background:var(--accent1); box-shadow:var(--glow1); }
+  
+  .btn-delete { border-color:var(--accent2); color:var(--accent2); background:transparent; }
+  .btn-delete:hover { color:#000; background:var(--accent2); box-shadow:var(--glow2); }
+
+  /* ── Leaderboard Table ── */
+  .board { background:var(--panel); border:1px solid var(--border); border-radius:4px; overflow:hidden; position:relative; }
+  .board::before { content:''; position:absolute; top:-1px; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent4),var(--accent1),var(--accent2)); }
+  
+  .board-header {
+    display:grid; grid-template-columns:50px 1.5fr 1fr 1fr 1fr 1fr 120px;
+    padding:.75rem 1rem; border-bottom:1px solid var(--border);
+    font-family:'Share Tech Mono',monospace; font-size:.6rem; color:var(--dim); letter-spacing:.2em; text-transform:uppercase; text-align:center;
+  }
+  .board-row {
+    display:grid; grid-template-columns:50px 1.5fr 1fr 1fr 1fr 1fr 120px;
+    padding:.9rem 1rem; border-bottom:1px solid rgba(15,52,96,.5); align-items:center; text-align:center; position:relative;
+  }
+  .board-row:hover { background:rgba(0,212,255,.03); }
+  @media(max-width:768px){
+    .board-header, .board-row { grid-template-columns:40px 1fr 100px; }
+    .col-hide-mobile { display:none; }
+  }
+
+  .rank-1 { background:linear-gradient(90deg,rgba(255,215,0,.07),transparent); }
+  .rank-2 { background:linear-gradient(90deg,rgba(192,192,192,.05),transparent); }
+  .rank-3 { background:linear-gradient(90deg,rgba(205,127,50,.05),transparent); }
+
+  .col-pos { font-family:'Orbitron',monospace; font-size:1rem; font-weight:900; }
+  .medal-1 { color:var(--accent4); text-shadow:var(--glow4); }
+  .medal-2 { color:#c0c0c0; }
+  .medal-3 { color:#cd7f32; }
+
+  .col-name { font-family:'Orbitron',monospace; font-size:.85rem; font-weight:700; color:var(--text); text-align:left; }
+  .col-final { font-family:'Orbitron',monospace; font-size:1.1rem; font-weight:900; color:var(--accent4); text-shadow:var(--glow4); }
+  .badge-status { font-family:'Share Tech Mono',monospace; font-size:.65rem; padding:.2rem .4rem; border-radius:2px; }
+  .badge-ok { background:rgba(127,255,107,.1); border:1px solid rgba(127,255,107,.3); color:var(--accent3); }
+  .badge-pending { background:rgba(255,107,53,.1); border:1px solid rgba(255,107,53,.3); color:var(--accent2); }
+
+  /* ── Modal Settings ── */
+  .modal {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); backdrop-filter:blur(8px); z-index:1000;
+    align-items:center; justify-content:center; padding:1rem;
+  }
+  .modal-card { background:var(--panel); border:1px solid var(--accent1); border-radius:4px; max-width:450px; width:100%; padding:1.5rem; }
+</style>
+</head>
+<body>
+
+<!-- ── Topbar ── -->
+<nav class="topbar">
+  <div class="topbar-left">
+    <span class="logo-sm">ABET // EVAL</span>
+    <div class="divider-v"></div>
+    <span class="session-tag">SYSTEM: CONECTADO</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('captura')">📝 Evaluador</button>
+    <button class="tab-btn" onclick="switchTab('resultados')">📊 Leaderboard</button>
+    <button class="tab-btn" style="border-color:var(--dim); color:var(--dim)" onclick="openConfig()">⚙️</button>
+  </div>
+</nav>
+
+<div class="main">
+
+  <div class="page-title">
+    <h1>SISTEMA DE EVALUACIÓN DE PRESENTACIONES</h1>
+    <p>RÚBRICAS PONDERADAS PARALELAS · ESCALA 1.0 - 4.0</p>
+  </div>
+
+  <div class="live-badge">
+    <div class="live-dot"></div> SINCRO EN TIEMPO REAL ACTIVA — SUPABASE LINK
+  </div>
+
+  <!-- ── TAB 1: CAPTURA DE EVALUACIÓN ── -->
+  <div id="tab-captura">
+    <div class="panel">
+      <div class="panel-title">Configuración de Evaluación</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>// 1. Selecciona tu Rol</label>
+          <select id="selRol" onchange="renderRubrica()">
+            <option value="Profesor">Profesor (50% Nota Final)</option>
+            <option value="Asistente Graduado">Asistente Graduado (30% Nota Final)</option>
+            <option value="Monitor">Monitor (20% Nota Final)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>// 2. Estudiante o Grupo</label>
+          <input type="text" id="txtEstudiante" placeholder="Ej. Grupo 1 - Rover Alpha" oninput="cargarEvaluacionExistente()">
+        </div>
+      </div>
+      <div class="field">
+        <label>// Nombre del Evaluador (Opcional)</label>
+        <input type="text" id="txtEvaluador" placeholder="Nombre completo">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title" id="lblRubricaTitle">Rúbrica de Criterios</div>
+      <div id="rubricaContainer"></div>
+
+      <!-- Preview del cálculo -->
+      <div style="background:var(--panel2); border:1px solid var(--border); padding:1rem; text-align:center; margin-bottom:1.5rem; border-radius:3px;">
+        <span style="font-family:'Share Tech Mono'; font-size:.7rem; color:var(--dim); letter-spacing:.15em;">SUBTOTAL ROL ACTUAL:</span>
+        <div id="lblSubtotal" style="font-family:'Orbitron'; font-size:1.8rem; font-weight:900; color:var(--accent1); text-shadow:var(--glow1);">2.50 / 4.0</div>
+      </div>
+
+      <div class="grid-2">
+        <button class="btn btn-save" onclick="guardarEvaluacion()">💾 Guardar / Actualizar Evaluación</button>
+        <button class="btn btn-delete" onclick="eliminarEvaluacion()">🗑️ Eliminar Registro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB 2: RESULTADOS CONSOLIDADOS ── -->
+  <div id="tab-resultados" style="display:none;">
+    <div class="board">
+      <div class="board-header">
+        <div>#</div>
+        <div style="text-align:left">Estudiante / Grupo</div>
+        <div class="col-hide-mobile">Prof (50%)</div>
+        <div class="col-hide-mobile">Asis (30%)</div>
+        <div class="col-hide-mobile">Mon (20%)</div>
+        <div class="col-hide-mobile">Estado</div>
+        <div>Nota Final</div>
+      </div>
+      <div id="boardBody"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── MODAL CONFIG SUPABASE ── -->
+<div class="modal" id="cfgModal">
+  <div class="modal-card">
+    <div class="panel-title">Sincronización Supabase</div>
+    <div class="field">
+      <label>Supabase URL</label>
+      <input type="text" id="cfgUrl" placeholder="https://xyz.supabase.co">
+    </div>
+    <div class="field">
+      <label>Supabase Anon Key</label>
+      <input type="text" id="cfgKey" placeholder="eyJhbGciOi...">
+    </div>
+    <button class="btn btn-save" onclick="saveConfig()">Guardar y Conectar</button>
+    <button class="btn btn-delete" style="margin-top:.5rem;" onclick="closeConfig()">Cerrar</button>
+  </div>
+</div>
+
+<script>
+// ── ESTRUCTURA DE ROLES Y RÚBRICAS ──
+const ROLES = {
+  "Profesor": { peso: 0.50, criterios: { "Criterio A (Dominio Técnico)": 0.60, "Criterio B (Metodología)": 0.40 } },
+  "Asistente Graduado": { peso: 0.30, criterios: { "Criterio C (Resultados)": 0.50, "Criterio D (Análisis)": 0.50 } },
+  "Monitor": { peso: 0.20, criterios: { "Criterio E (Diapositivas)": 0.50, "Criterio F (Tiempo/Expresión)": 0.50 } }
+};
+
+let db = [];
+let supabaseClient = null;
+
+// ── INICIALIZACIÓN DE LA APLICACIÓN ──
+window.addEventListener("DOMContentLoaded", async () => {
+  initSupabase();
+  await cargarDatos();
+  renderRubrica();
+});
+
+function initSupabase() {
+  const url = localStorage.getItem("sp_url");
+  const key = localStorage.getItem("sp_key");
+  if(url && key && window.supabase) {
+    supabaseClient = window.supabase.createClient(url, key);
+  }
+}
+
+async function cargarDatos() {
+  if(supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient.from('evaluaciones').select('*');
+      if(!error && data) { db = data; renderBoard(); return; }
+    } catch(e) { console.warn("Fallo Supabase, usando LocalStorage", e); }
+  }
+  db = JSON.parse(localStorage.getItem("abet_evals") || "[]");
+  renderBoard();
+}
+
+async function persistir() {
+  localStorage.setItem("abet_evals", JSON.stringify(db));
+  renderBoard();
+}
+
+// ── NAVEGACIÓN ENTRE PESTAÑAS ──
+function switchTab(tab) {
+  document.getElementById("tab-captura").style.display = tab === 'captura' ? 'block' : 'none';
+  document.getElementById("tab-resultados").style.display = tab === 'resultados' ? 'block' : 'none';
+  
+  const btns = document.querySelectorAll(".tab-btn");
+  btns[0].classList.toggle("active", tab === 'captura');
+  btns[1].classList.toggle("active", tab === 'resultados');
+}
+
+// ── RENDERING DE LA RÚBRICA INTERACTIVA ──
+function renderRubrica() {
+  const rol = document.getElementById("selRol").value;
+  const container = document.getElementById("rubricaContainer");
+  container.innerHTML = "";
+  
+  document.getElementById("lblRubricaTitle").textContent = `Rúbrica — ${rol} (${ROLES[rol].peso * 100}% de la nota global)`;
+
+  Object.entries(ROLES[rol].criterios).forEach(([crit, peso]) => {
+    const div = document.createElement("div");
+    div.className = "slider-container";
+    div.innerHTML = `
+      <div class="slider-header">
+        <span class="slider-title">${crit} <small style="color:var(--dim)">(Peso: ${peso*100}%)</small></span>
+        <span class="slider-val" id="val_${crit}">2.5</span>
+      </div>
+      <input type="range" min="1.0" max="4.0" step="0.1" value="2.5" data-crit="${crit}" data-peso="${peso}" oninput="updateSubtotal()">
+    `;
+    container.appendChild(div);
+  });
+  
+  cargarEvaluacionExistente();
+  updateSubtotal();
+}
+
+function updateSubtotal() {
+  const rol = document.getElementById("selRol").value;
+  const inputs = document.querySelectorAll("#rubricaContainer input[type=range]");
+  let notaRol = 0;
+
+  inputs.forEach(inp => {
+    const v = parseFloat(inp.value);
+    const peso = parseFloat(inp.dataset.peso);
+    document.getElementById(`val_${inp.dataset.crit}`).textContent = v.toFixed(1);
+    notaRol += v * peso;
+  });
+
+  document.getElementById("lblSubtotal").textContent = `${notaRol.toFixed(2)} / 4.0`;
+}
+
+// ── GUARDAR / ELIMINAR EVALUACIONES ──
+async function guardarEvaluacion() {
+  const estudiante = document.getElementById("txtEstudiante").value.trim();
+  const rol = document.getElementById("selRol").value;
+  const evaluador = document.getElementById("txtEvaluador").value.trim();
+  
+  if(!estudiante) { alert("Ingresa el nombre del estudiante o grupo."); return; }
+
+  const inputs = document.querySelectorAll("#rubricaContainer input[type=range]");
+  let criterios = {};
+  let notaRol = 0;
+  inputs.forEach(inp => {
+    const v = parseFloat(inp.value);
+    criterios[inp.dataset.crit] = v;
+    notaRol += v * parseFloat(inp.dataset.peso);
+  });
+
+  const registro = {
+    estudiante, rol, evaluador,
+    criterios_json: JSON.stringify(criterios),
+    nota_rol: parseFloat(notaRol.toFixed(4)),
+    timestamp: new Date().toLocaleString("es")
+  };
+
+  // Upsert local
+  const idx = db.findIndex(x => x.estudiante.toLowerCase() === estudiante.toLowerCase() && x.rol === rol);
+  if(idx >= 0) db[idx] = registro;
+  else db.push(registro);
+
+  // Sync Supabase si está activo
+  if(supabaseClient) {
+    await supabaseClient.from('evaluaciones').upsert(registro, { onConflict: 'estudiante,rol' });
+  }
+
+  await persistir();
+  alert(`✓ Evaluación de ${rol} guardada correctamente.`);
+}
+
+async function eliminarEvaluacion() {
+  const estudiante = document.getElementById("txtEstudiante").value.trim();
+  const rol = document.getElementById("selRol").value;
+
+  if(!estudiante) return;
+  if(!confirm(`¿Eliminar la evaluación de ${rol} para ${estudiante}?`)) return;
+
+  db = db.filter(x => !(x.estudiante.toLowerCase() === estudiante.toLowerCase() && x.rol === rol));
+
+  if(supabaseClient) {
+    await supabaseClient.from('evaluaciones').delete().eq('estudiante', estudiante).eq('rol', rol);
+  }
+
+  await persistir();
+  alert("Evaluación eliminada.");
+}
+
+function cargarEvaluacionExistente() {
+  const estudiante = document.getElementById("txtEstudiante").value.trim();
+  const rol = document.getElementById("selRol").value;
+  if(!estudiante) return;
+
+  const reg = db.find(x => x.estudiante.toLowerCase() === estudiante.toLowerCase() && x.rol === rol);
+  if(reg) {
+    const critMap = JSON.parse(reg.criterios_json);
+    document.querySelectorAll("#rubricaContainer input[type=range]").forEach(inp => {
+      if(critMap[inp.dataset.crit]) inp.value = critMap[inp.dataset.crit];
+    });
+    if(reg.evaluador) document.getElementById("txtEvaluador").value = reg.evaluador;
+    updateSubtotal();
+  }
+}
+
+// ── CONSOLIDADO Y LEADERBOARD ──
+function renderBoard() {
+  const board = document.getElementById("boardBody");
+  board.innerHTML = "";
+
+  // Agrupar por estudiante
+  const estudiantes = [...new Set(db.map(x => x.estudiante))];
+
+  let filas = estudiantes.map(est => {
+    let evals = {};
+    db.filter(x => x.estudiante === est).forEach(x => evals[x.rol] = x.nota_rol);
+    
+    const tieneProf = evals["Profesor"] !== undefined;
+    const tieneAsis = evals["Asistente Graduado"] !== undefined;
+    const tieneMon  = evals["Monitor"] !== undefined;
+
+    let notaFinal = null;
+    let completo = tieneProf && tieneAsis && tieneMon;
+
+    if(completo) {
+      notaFinal = (evals["Profesor"] * 0.50) + (evals["Asistente Graduado"] * 0.30) + (evals["Monitor"] * 0.20);
+    }
+
+    return { estudiante: est, evals, completo, notaFinal };
+  });
+
+  // Ordenar por nota final descendente
+  filas.sort((a,b) => (b.notaFinal || 0) - (a.notaFinal || 0));
+
+  filas.forEach((f, i) => {
+    const pos = i + 1;
+    const rankClass = pos === 1 ? 'rank-1' : pos === 2 ? 'rank-2' : pos === 3 ? 'rank-3' : '';
+    const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
+    const medalClass = pos === 1 ? 'medal-1' : pos === 2 ? 'medal-2' : pos === 3 ? 'medal-3' : '';
+
+    const div = document.createElement("div");
+    div.className = `board-row ${rankClass}`;
+    div.innerHTML = `
+      <div class="col-pos ${medalClass}">${medal}</div>
+      <div class="col-name">${f.estudiante.toUpperCase()}</div>
+      <div class="col-hide-mobile">${f.evals["Profesor"] ? f.evals["Profesor"].toFixed(2) : '—'}</div>
+      <div class="col-hide-mobile">${f.evals["Asistente Graduado"] ? f.evals["Asistente Graduado"].toFixed(2) : '—'}</div>
+      <div class="col-hide-mobile">${f.evals["Monitor"] ? f.evals["Monitor"].toFixed(2) : '—'}</div>
+      <div class="col-hide-mobile"><span class="badge-status ${f.completo ? 'badge-ok' : 'badge-pending'}">${f.completo ? 'COMPLETO' : 'PENDIENTE'}</span></div>
+      <div class="col-final">${f.notaFinal !== null ? f.notaFinal.toFixed(3) : '—'}</div>
+    `;
+    board.appendChild(div);
+  });
+}
+
+// ── CONFIGURACIÓN SUPABASE MODAL ──
+function openConfig() {
+  document.getElementById("cfgUrl").value = localStorage.getItem("sp_url") || "";
+  document.getElementById("cfgKey").value = localStorage.getItem("sp_key") || "";
+  document.getElementById("cfgModal").style.display = "flex";
+}
+function closeConfig() { document.getElementById("cfgModal").style.display = "none"; }
+function saveConfig() {
+  localStorage.setItem("sp_url", document.getElementById("cfgUrl").value.trim());
+  localStorage.setItem("sp_key", document.getElementById("cfgKey").value.trim());
+  initSupabase();
+  closeConfig();
+  cargarDatos();
+}
+</script>
+</body>
+</html>
