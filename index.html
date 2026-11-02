@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ABET — Evaluación de Presentaciones Académicas</title>
+<title>R.O.V.E.R — ASME Arena Challenge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -65,135 +66,95 @@
   .tab-btn:hover { border-color:var(--accent1); color:var(--accent1); }
   .tab-btn.active { border-color:var(--accent1); color:#000; background:var(--accent1); box-shadow:var(--glow1); }
 
-  /* ── Layout ── */
-  .main { max-width:1100px; margin:0 auto; padding:2rem 1.5rem 4rem; position:relative; z-index:10; }
-
-  /* ── Page title ── */
-  .page-title { text-align:center; margin-bottom:2rem; }
+  .main { max-width:1200px; margin:0 auto; padding:2rem 1.5rem 4rem; position:relative; z-index:10; }
+  .page-title { text-align:center; margin-bottom:2.5rem; }
   .page-title h1 {
-    font-family:'Orbitron',monospace;
-    font-size:clamp(1.5rem,4vw,2.3rem); font-weight:900;
+    font-family:'Orbitron',monospace; font-size:clamp(1.4rem,4vw,2.2rem); font-weight:900;
     color:#fff; letter-spacing:.1em; text-shadow:var(--glow1);
   }
   .page-title p { font-family:'Share Tech Mono',monospace; font-size:.7rem; color:var(--accent2); letter-spacing:.3em; margin-top:.4rem; text-transform:uppercase; }
 
-  /* ── Live indicator ── */
-  .live-badge {
-    display:inline-flex; align-items:center; gap:.5rem;
-    font-family:'Share Tech Mono',monospace; font-size:.65rem;
-    color:var(--accent3); letter-spacing:.2em; text-transform:uppercase;
-    padding:.3rem .7rem;
-    background:rgba(127,255,107,.05); border:1px solid rgba(127,255,107,.2); border-radius:2px;
-    margin-bottom:1.5rem;
-  }
-  .live-dot { width:6px; height:6px; border-radius:50%; background:var(--accent3); animation:livePulse 1s ease-in-out infinite; }
-  @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.6)} }
+  /* ── Layout & Panels ── */
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+  @media(max-width:768px){ .grid{ grid-template-columns:1fr; } }
 
-  /* ── Panels & Cards ── */
   .panel {
-    background:var(--panel); border:1px solid var(--border); border-radius:4px;
-    padding:1.5rem; margin-bottom:1.5rem; position:relative;
-    box-shadow: 0 0 40px rgba(0,0,0,.5);
+    background:var(--panel); border:1px solid var(--border); border-radius:4px; padding:1.5rem; position:relative;
   }
   .panel::before {
-    content:''; position:absolute; top:-1px; left:10%; right:10%; height:2px;
+    content:''; position:absolute; top:-1px; left:15%; right:15%; height:1px;
     background:linear-gradient(90deg,transparent,var(--accent1),transparent);
   }
+  .panel.full { grid-column:1/-1; }
+
   .panel-title {
-    font-family:'Orbitron',monospace; font-size:.8rem; font-weight:700;
-    color:var(--accent1); letter-spacing:.2em; text-transform:uppercase;
-    margin-bottom:1.2rem; display:flex; align-items:center; gap:.6rem;
+    font-family:'Orbitron',monospace; font-size:.75rem; font-weight:700; color:var(--accent1); letter-spacing:.2em;
+    text-transform:uppercase; margin-bottom:1.2rem; display:flex; align-items:center; gap:.6rem;
   }
   .panel-title::before { content:''; display:block; width:3px; height:14px; background:var(--accent1); box-shadow:var(--glow1); border-radius:1px; }
 
-  /* ── Form Controls ── */
-  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
-  @media(max-width:640px){ .grid-2 { grid-template-columns:1fr; } }
+  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  @media(max-width:500px){ .field-row{ grid-template-columns:1fr; } }
+  .field-triple { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; }
+  @media(max-width:500px){ .field-triple{ grid-template-columns:1fr; } }
 
-  .field { margin-bottom:1.2rem; }
+  .field { margin-bottom:1rem; }
   label {
-    display:block; font-family:'Share Tech Mono',monospace;
-    font-size:.65rem; color:var(--dim); letter-spacing:.2em; text-transform:uppercase; margin-bottom:.4rem;
+    display:block; font-family:'Share Tech Mono',monospace; font-size:.6rem; color:var(--dim);
+    letter-spacing:.2em; text-transform:uppercase; margin-bottom:.35rem;
   }
-  select, input[type=text] {
-    width:100%; padding:.7rem 1rem;
-    background:rgba(0,212,255,.02); border:1px solid var(--border); border-radius:2px;
-    color:var(--text); font-family:'Share Tech Mono',monospace; font-size:.9rem; outline:none;
-    transition:border-color .2s, box-shadow .2s;
+  input[type=number], select {
+    width:100%; padding:.65rem .9rem; background:rgba(0,212,255,.02); border:1px solid var(--border); border-radius:2px;
+    color:var(--text); font-family:'Share Tech Mono',monospace; font-size:.88rem; outline:none; transition:border-color .2s, box-shadow .2s;
   }
-  select:focus, input[type=text]:focus { border-color:var(--accent1); box-shadow:var(--glow1); }
   select option { background:var(--panel); color:var(--text); }
-
-  /* Slider Styling */
-  .slider-container {
-    background:var(--panel2); border:1px solid var(--border); border-radius:3px; padding:1rem; margin-bottom:1rem;
-  }
-  .slider-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
-  .slider-title { font-family:'Share Tech Mono',monospace; font-size:.75rem; color:var(--text); }
-  .slider-val { font-family:'Orbitron',monospace; font-size:1.1rem; font-weight:900; color:var(--accent1); text-shadow:var(--glow1); }
-  
-  input[type=range] {
-    -webkit-appearance:none; width:100%; background:var(--border); height:6px; border-radius:3px; outline:none;
-  }
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--accent1);
-    box-shadow:var(--glow1); cursor:pointer; transition:transform .1s;
-  }
-  input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
+  input[type=number]:focus, select:focus { border-color:var(--accent1); box-shadow:var(--glow1); }
+  input.orange:focus { border-color:var(--accent2); box-shadow:var(--glow2); }
+  input.green:focus  { border-color:var(--accent3); box-shadow:var(--glow3); }
+  .hint { font-family:'Share Tech Mono',monospace; font-size:.58rem; color:var(--dim); margin-top:.25rem; }
 
   /* Buttons */
-  .btn {
-    width:100%; padding:.85rem; border-radius:2px; cursor:pointer;
-    font-family:'Orbitron',monospace; font-size:.75rem; font-weight:700;
-    letter-spacing:.15em; text-transform:uppercase;
-    border:1px solid; position:relative; overflow:hidden;
-    transition:color .2s, box-shadow .2s;
+  .btn-calc {
+    display:block; width:100%; padding:1rem; background:transparent; border:1px solid var(--accent1); color:var(--accent1);
+    font-family:'Orbitron',monospace; font-size:.85rem; font-weight:700; letter-spacing:.2em; cursor:pointer;
+    border-radius:2px; text-transform:uppercase; transition:color .2s, box-shadow .2s; margin-top:.5rem;
   }
-  .btn-save { border-color:var(--accent1); color:var(--accent1); background:transparent; }
-  .btn-save:hover { color:#000; background:var(--accent1); box-shadow:var(--glow1); }
+  .btn-calc:hover { color:#000; background:var(--accent1); box-shadow:var(--glow1); }
+
+  .results-panel {
+    display:none; background:var(--panel2); border:1px solid var(--border); border-radius:4px; padding:1.8rem; margin-top:1.5rem;
+  }
+  .res-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+  .res-card { padding:1rem; background:rgba(0,0,0,.3); border:1px solid var(--border); border-radius:3px; text-align:center; }
+  .res-label { font-family:'Share Tech Mono',monospace; font-size:.58rem; color:var(--dim); letter-spacing:.15em; text-transform:uppercase; margin-bottom:.4rem; }
+  .res-val { font-family:'Orbitron',monospace; font-size:1.1rem; font-weight:700; }
   
-  .btn-delete { border-color:var(--accent2); color:var(--accent2); background:transparent; }
-  .btn-delete:hover { color:#000; background:var(--accent2); box-shadow:var(--glow2); }
+  .c1 { color:var(--accent1); text-shadow:var(--glow1); }
+  .c2 { color:var(--accent2); text-shadow:var(--glow2); }
+  .c3 { color:var(--accent3); text-shadow:var(--glow3); }
+  .c4 { color:var(--accent4); text-shadow:var(--glow4); }
+
+  .final-score-big {
+    text-align:center; padding:1.5rem 1rem; background:linear-gradient(135deg, rgba(255,215,0,.05), rgba(0,212,255,.05));
+    border:1px solid rgba(255,215,0,.2); border-radius:4px; margin-top:1rem;
+  }
+  .final-num { font-family:'Orbitron',monospace; font-size:clamp(2rem,6vw,3.5rem); font-weight:900; color:var(--accent4); text-shadow:var(--glow4); }
+  .penalty-warn { margin-top:1rem; padding:.6rem .9rem; background:rgba(255,107,53,.07); border:1px solid rgba(255,107,53,.25); color:var(--accent2); font-family:'Share Tech Mono'; font-size:.7rem; }
 
   /* ── Leaderboard Table ── */
   .board { background:var(--panel); border:1px solid var(--border); border-radius:4px; overflow:hidden; position:relative; }
-  .board::before { content:''; position:absolute; top:-1px; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent4),var(--accent1),var(--accent2)); }
-  
-  .board-header {
-    display:grid; grid-template-columns:50px 1.5fr 1fr 1fr 1fr 1fr 120px;
-    padding:.75rem 1rem; border-bottom:1px solid var(--border);
-    font-family:'Share Tech Mono',monospace; font-size:.6rem; color:var(--dim); letter-spacing:.2em; text-transform:uppercase; text-align:center;
-  }
-  .board-row {
-    display:grid; grid-template-columns:50px 1.5fr 1fr 1fr 1fr 1fr 120px;
-    padding:.9rem 1rem; border-bottom:1px solid rgba(15,52,96,.5); align-items:center; text-align:center; position:relative;
-  }
-  .board-row:hover { background:rgba(0,212,255,.03); }
-  @media(max-width:768px){
-    .board-header, .board-row { grid-template-columns:40px 1fr 100px; }
-    .col-hide-mobile { display:none; }
-  }
-
-  .rank-1 { background:linear-gradient(90deg,rgba(255,215,0,.07),transparent); }
-  .rank-2 { background:linear-gradient(90deg,rgba(192,192,192,.05),transparent); }
-  .rank-3 { background:linear-gradient(90deg,rgba(205,127,50,.05),transparent); }
-
-  .col-pos { font-family:'Orbitron',monospace; font-size:1rem; font-weight:900; }
+  .board-header { display:grid; grid-template-columns:60px 1fr 200px 140px; padding:.75rem 1.2rem; border-bottom:1px solid var(--border); font-family:'Share Tech Mono',monospace; font-size:.6rem; color:var(--dim); letter-spacing:.2em; text-transform:uppercase; }
+  .board-row { display:grid; grid-template-columns:60px 1fr 200px 140px; padding:.9rem 1.2rem; border-bottom:1px solid rgba(15,52,96,.5); align-items:center; position:relative; }
+  .col-pos { font-family:'Orbitron',monospace; font-size:1rem; font-weight:900; text-align:center; }
   .medal-1 { color:var(--accent4); text-shadow:var(--glow4); }
   .medal-2 { color:#c0c0c0; }
   .medal-3 { color:#cd7f32; }
+  .col-team { font-family:'Orbitron',monospace; font-size:.85rem; font-weight:700; color:var(--text); text-transform:uppercase; }
+  .col-score { font-family:'Orbitron',monospace; font-size:1.2rem; font-weight:900; text-align:right; color:var(--accent1); }
+  .score-1 { color:var(--accent4); text-shadow:var(--glow4); }
 
-  .col-name { font-family:'Orbitron',monospace; font-size:.85rem; font-weight:700; color:var(--text); text-align:left; }
-  .col-final { font-family:'Orbitron',monospace; font-size:1.1rem; font-weight:900; color:var(--accent4); text-shadow:var(--glow4); }
-  .badge-status { font-family:'Share Tech Mono',monospace; font-size:.65rem; padding:.2rem .4rem; border-radius:2px; }
-  .badge-ok { background:rgba(127,255,107,.1); border:1px solid rgba(127,255,107,.3); color:var(--accent3); }
-  .badge-pending { background:rgba(255,107,53,.1); border:1px solid rgba(255,107,53,.3); color:var(--accent2); }
-
-  /* ── Modal Settings ── */
-  .modal {
-    display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); backdrop-filter:blur(8px); z-index:1000;
-    align-items:center; justify-content:center; padding:1rem;
-  }
+  /* Modal Config */
+  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:1000; align-items:center; justify-content:center; padding:1rem; }
   .modal-card { background:var(--panel); border:1px solid var(--accent1); border-radius:4px; max-width:450px; width:100%; padding:1.5rem; }
 </style>
 </head>
@@ -202,80 +163,137 @@
 <!-- ── Topbar ── -->
 <nav class="topbar">
   <div class="topbar-left">
-    <span class="logo-sm">ABET // EVAL</span>
+    <span class="logo-sm">R.O.V.E.R</span>
     <div class="divider-v"></div>
-    <span class="session-tag">SYSTEM: CONECTADO</span>
+    <span class="session-tag">▶ ARENA CHALLENGE</span>
   </div>
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('captura')">📝 Evaluador</button>
-    <button class="tab-btn" onclick="switchTab('resultados')">📊 Leaderboard</button>
+    <button class="tab-btn active" onclick="switchTab('calc')">⚡ Calculadora</button>
+    <button class="tab-btn" onclick="switchTab('ranking')">🏆 Ranking en Vivo</button>
     <button class="tab-btn" style="border-color:var(--dim); color:var(--dim)" onclick="openConfig()">⚙️</button>
   </div>
 </nav>
 
 <div class="main">
 
-  <div class="page-title">
-    <h1>SISTEMA DE EVALUACIÓN DE PRESENTACIONES</h1>
-    <p>RÚBRICAS PONDERADAS PARALELAS · ESCALA 1.0 - 4.0</p>
-  </div>
+  <!-- ── TAB 1: CALCULADORA DE PUNTAJE DE LA COMPETENCIA ── -->
+  <div id="tab-calc">
+    <div class="page-title">
+      <h1>CALCULADORA DE PUNTAJE</h1>
+      <p>ASME Arena Challenge — Concurso Rovers</p>
+    </div>
 
-  <div class="live-badge">
-    <div class="live-dot"></div> SINCRO EN TIEMPO REAL ACTIVA — SUPABASE LINK
-  </div>
-
-  <!-- ── TAB 1: CAPTURA DE EVALUACIÓN ── -->
-  <div id="tab-captura">
-    <div class="panel">
-      <div class="panel-title">Configuración de Evaluación</div>
-      <div class="grid-2">
-        <div class="field">
-          <label>// 1. Selecciona tu Rol</label>
-          <select id="selRol" onchange="renderRubrica()">
-            <option value="Profesor">Profesor (50% Nota Final)</option>
-            <option value="Asistente Graduado">Asistente Graduado (30% Nota Final)</option>
-            <option value="Monitor">Monitor (20% Nota Final)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>// 2. Estudiante o Grupo</label>
-          <input type="text" id="txtEstudiante" placeholder="Ej. Grupo 1 - Rover Alpha" oninput="cargarEvaluacionExistente()">
-        </div>
-      </div>
+    <div class="panel" style="margin-bottom:1.5rem;">
+      <div class="panel-title">Selección de Equipo</div>
       <div class="field">
-        <label>// Nombre del Evaluador (Opcional)</label>
-        <input type="text" id="txtEvaluador" placeholder="Nombre completo">
+        <label>Equipo / Grupo a Evaluar</label>
+        <select id="selTeam">
+          <option value="Grupo 1">Grupo 1</option>
+          <option value="Grupo 2">Grupo 2</option>
+          <option value="Grupo 3">Grupo 3</option>
+          <option value="Grupo 4">Grupo 4</option>
+          <option value="Grupo 5">Grupo 5</option>
+          <option value="Grupo 6">Grupo 6</option>
+          <option value="Grupo 7">Grupo 7</option>
+          <option value="Grupo 8">Grupo 8</option>
+        </select>
       </div>
     </div>
 
-    <div class="panel">
-      <div class="panel-title" id="lblRubricaTitle">Rúbrica de Criterios</div>
-      <div id="rubricaContainer"></div>
-
-      <!-- Preview del cálculo -->
-      <div style="background:var(--panel2); border:1px solid var(--border); padding:1rem; text-align:center; margin-bottom:1.5rem; border-radius:3px;">
-        <span style="font-family:'Share Tech Mono'; font-size:.7rem; color:var(--dim); letter-spacing:.15em;">SUBTOTAL ROL ACTUAL:</span>
-        <div id="lblSubtotal" style="font-family:'Orbitron'; font-size:1.8rem; font-weight:900; color:var(--accent1); text-shadow:var(--glow1);">2.50 / 4.0</div>
+    <div class="grid">
+      <!-- Puntaje Base -->
+      <div class="panel">
+        <div class="panel-title">Puntaje Base (antes de prueba)</div>
+        <div class="field">
+          <label>Reporte de Diseño (máx 5000 pts)</label>
+          <input type="number" id="design" min="0" max="5000" step="1" placeholder="0 – 5000">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Gramos Depositados</label>
+            <input type="number" id="grams" min="0" step="0.1" placeholder="g" class="orange">
+            <div class="hint">1 pt por gramo</div>
+          </div>
+          <div class="field">
+            <label>Piezas Metálicas</label>
+            <input type="number" id="pieces" min="0" step="1" placeholder="piezas" class="green">
+            <div class="hint">1 000 pts por pieza</div>
+          </div>
+        </div>
       </div>
 
-      <div class="grid-2">
-        <button class="btn btn-save" onclick="guardarEvaluacion()">💾 Guardar / Actualizar Evaluación</button>
-        <button class="btn btn-delete" onclick="eliminarEvaluacion()">🗑️ Eliminar Registro</button>
+      <!-- Manufactura Aditiva -->
+      <div class="panel">
+        <div class="panel-title">Manufactura Aditiva (AM)</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Total de Partes</label>
+            <input type="number" id="total_parts" min="1" step="1" placeholder="total">
+          </div>
+          <div class="field">
+            <label>Excepciones</label>
+            <input type="number" id="exceptions" min="0" step="1" placeholder="0">
+          </div>
+        </div>
+        <div class="field">
+          <label>Partes con Manufactura Aditiva (AM)</label>
+          <input type="number" id="am_parts" min="0" step="1" placeholder="partes AM" class="green">
+          <div class="hint">Ratio AM = AM / (Total − Excepciones)</div>
+        </div>
+      </div>
+
+      <!-- Dimensiones -->
+      <div class="panel full">
+        <div class="panel-title">Dimensiones del ROVER (cm)</div>
+        <div class="hint" style="margin-bottom:1rem; color:var(--accent2);">
+          Límite: 30.48 cm × 30.48 cm × 30.48 cm → <strong style="color:var(--accent2);">28 316.85 cm³</strong>. Si excede, penaliza proporcionalmente.
+        </div>
+        <div class="field-triple">
+          <div class="field"><label>Ancho (A)</label><input type="number" id="width" step="0.01" placeholder="cm"></div>
+          <div class="field"><label>Largo (L)</label><input type="number" id="length" step="0.01" placeholder="cm"></div>
+          <div class="field"><label>Altura (H)</label><input type="number" id="height" step="0.01" placeholder="cm"></div>
+        </div>
+
+        <button class="btn-calc" onclick="calculateAndSave()">⚡ Calcular y Publicar al Ranking</button>
+      </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="panel full results-panel" id="results">
+      <div class="panel-title">Resultados del Cálculo</div>
+      <div class="res-grid">
+        <div class="res-card"><div class="res-label">Reporte Diseño</div><div class="res-val c1" id="r_design">—</div></div>
+        <div class="res-card"><div class="res-label">Peso Excavado</div><div class="res-val c2" id="r_grams">—</div></div>
+        <div class="res-card"><div class="res-label">Piezas Metálicas</div><div class="res-val c2" id="r_pieces">—</div></div>
+        <div class="res-card"><div class="res-label">Puntaje Base</div><div class="res-val c1" id="r_base">—</div></div>
+        <div class="res-card"><div class="res-label">Ratio AM</div><div class="res-val c3" id="r_ratio">—</div></div>
+        <div class="res-card"><div class="res-label">Volumen ROVER</div><div class="res-val" id="r_vol">—</div></div>
+      </div>
+
+      <div class="penalty-warn" id="penaltyWarn" style="display:none">
+        ⚠ PENALIZACIÓN APLICADA: El ROVER excede el volumen máximo permitido (28 316.85 cm³).
+      </div>
+
+      <div class="final-score-big">
+        <div class="res-label">// Puntaje Final Guardado</div>
+        <div class="final-num" id="r_final">0</div>
       </div>
     </div>
   </div>
 
-  <!-- ── TAB 2: RESULTADOS CONSOLIDADOS ── -->
-  <div id="tab-resultados" style="display:none;">
+  <!-- ── TAB 2: RANKING EN VIVO ── -->
+  <div id="tab-ranking" style="display:none;">
+    <div class="page-title">
+      <h1>🏆 RANKING EN VIVO</h1>
+      <p>ASME Arena Challenge · Concurso Rovers</p>
+    </div>
+
     <div class="board">
       <div class="board-header">
-        <div>#</div>
-        <div style="text-align:left">Estudiante / Grupo</div>
-        <div class="col-hide-mobile">Prof (50%)</div>
-        <div class="col-hide-mobile">Asis (30%)</div>
-        <div class="col-hide-mobile">Mon (20%)</div>
-        <div class="col-hide-mobile">Estado</div>
-        <div>Nota Final</div>
+        <div class="col-pos">#</div>
+        <div>Equipo</div>
+        <div style="text-align:right">Puntaje</div>
+        <div style="text-align:right">Última actualización</div>
       </div>
       <div id="boardBody"></div>
     </div>
@@ -283,39 +301,25 @@
 
 </div>
 
-<!-- ── MODAL CONFIG SUPABASE ── -->
+<!-- ── MODAL SUPABASE CONFIG ── -->
 <div class="modal" id="cfgModal">
   <div class="modal-card">
-    <div class="panel-title">Sincronización Supabase</div>
-    <div class="field">
-      <label>Supabase URL</label>
-      <input type="text" id="cfgUrl" placeholder="https://xyz.supabase.co">
-    </div>
-    <div class="field">
-      <label>Supabase Anon Key</label>
-      <input type="text" id="cfgKey" placeholder="eyJhbGciOi...">
-    </div>
-    <button class="btn btn-save" onclick="saveConfig()">Guardar y Conectar</button>
-    <button class="btn btn-delete" style="margin-top:.5rem;" onclick="closeConfig()">Cerrar</button>
+    <div class="panel-title">Conectar Supabase en Tiempo Real</div>
+    <div class="field"><label>Supabase URL</label><input type="text" id="cfgUrl" placeholder="https://xyz.supabase.co"></div>
+    <div class="field"><label>Supabase Anon Key</label><input type="text" id="cfgKey" placeholder="eyJhbGciOi..."></div>
+    <button class="btn-calc" onclick="saveConfig()">Guardar y Conectar</button>
+    <button class="btn-calc" style="border-color:var(--accent2); color:var(--accent2); margin-top:.5rem;" onclick="closeConfig()">Cerrar</button>
   </div>
 </div>
 
 <script>
-// ── ESTRUCTURA DE ROLES Y RÚBRICAS ──
-const ROLES = {
-  "Profesor": { peso: 0.50, criterios: { "Criterio A (Dominio Técnico)": 0.60, "Criterio B (Metodología)": 0.40 } },
-  "Asistente Graduado": { peso: 0.30, criterios: { "Criterio C (Resultados)": 0.50, "Criterio D (Análisis)": 0.50 } },
-  "Monitor": { peso: 0.20, criterios: { "Criterio E (Diapositivas)": 0.50, "Criterio F (Tiempo/Expresión)": 0.50 } }
-};
-
-let db = [];
+let rankingData = [];
 let supabaseClient = null;
+const VOL_LIMIT = 28316.85;
 
-// ── INICIALIZACIÓN DE LA APLICACIÓN ──
-window.addEventListener("DOMContentLoaded", async () => {
+window.addEventListener("DOMContentLoaded", () => {
   initSupabase();
-  await cargarDatos();
-  renderRubrica();
+  loadData();
 });
 
 function initSupabase() {
@@ -326,206 +330,122 @@ function initSupabase() {
   }
 }
 
-async function cargarDatos() {
+async function loadData() {
   if(supabaseClient) {
     try {
-      const { data, error } = await supabaseClient.from('evaluaciones').select('*');
-      if(!error && data) { db = data; renderBoard(); return; }
-    } catch(e) { console.warn("Fallo Supabase, usando LocalStorage", e); }
+      const { data, error } = await supabaseClient.from('ranking_rover').select('*');
+      if(!error && data) { rankingData = data; renderRanking(); return; }
+    } catch(e) {}
   }
-  db = JSON.parse(localStorage.getItem("abet_evals") || "[]");
-  renderBoard();
+  rankingData = JSON.parse(localStorage.getItem("rover_ranking") || "[]");
+  renderRanking();
 }
 
-async function persistir() {
-  localStorage.setItem("abet_evals", JSON.stringify(db));
-  renderBoard();
-}
-
-// ── NAVEGACIÓN ENTRE PESTAÑAS ──
 function switchTab(tab) {
-  document.getElementById("tab-captura").style.display = tab === 'captura' ? 'block' : 'none';
-  document.getElementById("tab-resultados").style.display = tab === 'resultados' ? 'block' : 'none';
-  
+  document.getElementById("tab-calc").style.display = tab === 'calc' ? 'block' : 'none';
+  document.getElementById("tab-ranking").style.display = tab === 'ranking' ? 'block' : 'none';
   const btns = document.querySelectorAll(".tab-btn");
-  btns[0].classList.toggle("active", tab === 'captura');
-  btns[1].classList.toggle("active", tab === 'resultados');
+  btns[0].classList.toggle("active", tab === 'calc');
+  btns[1].classList.toggle("active", tab === 'ranking');
 }
 
-// ── RENDERING DE LA RÚBRICA INTERACTIVA ──
-function renderRubrica() {
-  const rol = document.getElementById("selRol").value;
-  const container = document.getElementById("rubricaContainer");
-  container.innerHTML = "";
-  
-  document.getElementById("lblRubricaTitle").textContent = `Rúbrica — ${rol} (${ROLES[rol].peso * 100}% de la nota global)`;
+function calculateAndSave() {
+  const team = document.getElementById("selTeam").value;
+  const design = parseFloat(document.getElementById("design").value) || 0;
+  const grams = parseFloat(document.getElementById("grams").value) || 0;
+  const pieces = parseFloat(document.getElementById("pieces").value) || 0;
+  const total_parts = parseFloat(document.getElementById("total_parts").value) || 1;
+  const exceptions = parseFloat(document.getElementById("exceptions").value) || 0;
+  const am_parts = parseFloat(document.getElementById("am_parts").value) || 0;
+  const width = parseFloat(document.getElementById("width").value) || 0;
+  const length = parseFloat(document.getElementById("length").value) || 0;
+  const height = parseFloat(document.getElementById("height").value) || 0;
 
-  Object.entries(ROLES[rol].criterios).forEach(([crit, peso]) => {
-    const div = document.createElement("div");
-    div.className = "slider-container";
-    div.innerHTML = `
-      <div class="slider-header">
-        <span class="slider-title">${crit} <small style="color:var(--dim)">(Peso: ${peso*100}%)</small></span>
-        <span class="slider-val" id="val_${crit}">2.5</span>
-      </div>
-      <input type="range" min="1.0" max="4.0" step="0.1" value="2.5" data-crit="${crit}" data-peso="${peso}" oninput="updateSubtotal()">
-    `;
-    container.appendChild(div);
-  });
-  
-  cargarEvaluacionExistente();
-  updateSubtotal();
-}
+  // Cálculo de volumen y penalizaciones
+  const vol = width * length * height;
+  let penaltyApplied = false;
+  let designUsed = design;
 
-function updateSubtotal() {
-  const rol = document.getElementById("selRol").value;
-  const inputs = document.querySelectorAll("#rubricaContainer input[type=range]");
-  let notaRol = 0;
-
-  inputs.forEach(inp => {
-    const v = parseFloat(inp.value);
-    const peso = parseFloat(inp.dataset.peso);
-    document.getElementById(`val_${inp.dataset.crit}`).textContent = v.toFixed(1);
-    notaRol += v * peso;
-  });
-
-  document.getElementById("lblSubtotal").textContent = `${notaRol.toFixed(2)} / 4.0`;
-}
-
-// ── GUARDAR / ELIMINAR EVALUACIONES ──
-async function guardarEvaluacion() {
-  const estudiante = document.getElementById("txtEstudiante").value.trim();
-  const rol = document.getElementById("selRol").value;
-  const evaluador = document.getElementById("txtEvaluador").value.trim();
-  
-  if(!estudiante) { alert("Ingresa el nombre del estudiante o grupo."); return; }
-
-  const inputs = document.querySelectorAll("#rubricaContainer input[type=range]");
-  let criterios = {};
-  let notaRol = 0;
-  inputs.forEach(inp => {
-    const v = parseFloat(inp.value);
-    criterios[inp.dataset.crit] = v;
-    notaRol += v * parseFloat(inp.dataset.peso);
-  });
-
-  const registro = {
-    estudiante, rol, evaluador,
-    criterios_json: JSON.stringify(criterios),
-    nota_rol: parseFloat(notaRol.toFixed(4)),
-    timestamp: new Date().toLocaleString("es")
-  };
-
-  // Upsert local
-  const idx = db.findIndex(x => x.estudiante.toLowerCase() === estudiante.toLowerCase() && x.rol === rol);
-  if(idx >= 0) db[idx] = registro;
-  else db.push(registro);
-
-  // Sync Supabase si está activo
-  if(supabaseClient) {
-    await supabaseClient.from('evaluaciones').upsert(registro, { onConflict: 'estudiante,rol' });
+  if (vol > VOL_LIMIT && VOL_LIMIT > 0) {
+    penaltyApplied = true;
+    designUsed = Math.max(0, design * (VOL_LIMIT / vol));
   }
 
-  await persistir();
-  alert(`✓ Evaluación de ${rol} guardada correctamente.`);
+  const gramsPts = grams * 1.0;
+  const piecesPts = pieces * 1000.0;
+  const baseScore = designUsed + gramsPts + piecesPts;
+
+  const effParts = Math.max(1, total_parts - exceptions);
+  const amRatio = Math.min(1.0, Math.max(0, am_parts / effParts));
+  const finalScore = Math.round(amRatio * baseScore);
+
+  // Mostrar panel de resultados
+  document.getElementById("r_design").textContent = Math.round(designUsed).toLocaleString("es");
+  document.getElementById("r_grams").textContent = gramsPts.toLocaleString("es");
+  document.getElementById("r_pieces").textContent = piecesPts.toLocaleString("es");
+  document.getElementById("r_base").textContent = Math.round(baseScore).toLocaleString("es");
+  document.getElementById("r_ratio").textContent = (amRatio * 100).toFixed(1) + " %";
+  document.getElementById("r_vol").textContent = Math.round(vol).toLocaleString("es") + " cm³";
+  document.getElementById("r_final").textContent = finalScore.toLocaleString("es");
+  document.getElementById("penaltyWarn").style.display = penaltyApplied ? "block" : "none";
+  document.getElementById("results").style.display = "block";
+
+  // Guardar en el Ranking
+  saveToRanking(team, finalScore);
 }
 
-async function eliminarEvaluacion() {
-  const estudiante = document.getElementById("txtEstudiante").value.trim();
-  const rol = document.getElementById("selRol").value;
+async function saveToRanking(team, score) {
+  const item = { team, score, updated: new Date().toLocaleTimeString("es") };
+  const idx = rankingData.findIndex(x => x.team === team);
+  if(idx >= 0) rankingData[idx] = item;
+  else rankingData.push(item);
 
-  if(!estudiante) return;
-  if(!confirm(`¿Eliminar la evaluación de ${rol} para ${estudiante}?`)) return;
-
-  db = db.filter(x => !(x.estudiante.toLowerCase() === estudiante.toLowerCase() && x.rol === rol));
+  localStorage.setItem("rover_ranking", JSON.stringify(rankingData));
 
   if(supabaseClient) {
-    await supabaseClient.from('evaluaciones').delete().eq('estudiante', estudiante).eq('rol', rol);
+    await supabaseClient.from('ranking_rover').upsert(item, { onConflict: 'team' });
   }
 
-  await persistir();
-  alert("Evaluación eliminada.");
+  renderRanking();
+  alert(`✓ Puntaje de ${team} (${score.toLocaleString("es")} pts) guardado y publicado en el Ranking.`);
 }
 
-function cargarEvaluacionExistente() {
-  const estudiante = document.getElementById("txtEstudiante").value.trim();
-  const rol = document.getElementById("selRol").value;
-  if(!estudiante) return;
+function renderRanking() {
+  const body = document.getElementById("boardBody");
+  body.innerHTML = "";
 
-  const reg = db.find(x => x.estudiante.toLowerCase() === estudiante.toLowerCase() && x.rol === rol);
-  if(reg) {
-    const critMap = JSON.parse(reg.criterios_json);
-    document.querySelectorAll("#rubricaContainer input[type=range]").forEach(inp => {
-      if(critMap[inp.dataset.crit]) inp.value = critMap[inp.dataset.crit];
-    });
-    if(reg.evaluador) document.getElementById("txtEvaluador").value = reg.evaluador;
-    updateSubtotal();
+  const list = [...rankingData].sort((a,b) => b.score - a.score);
+
+  if(list.length === 0) {
+    body.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--dim); font-family:'Share Tech Mono';">Aún no hay puntajes registrados. Usa la calculadora para publicar.</div>`;
+    return;
   }
-}
 
-// ── CONSOLIDADO Y LEADERBOARD ──
-function renderBoard() {
-  const board = document.getElementById("boardBody");
-  board.innerHTML = "";
-
-  // Agrupar por estudiante
-  const estudiantes = [...new Set(db.map(x => x.estudiante))];
-
-  let filas = estudiantes.map(est => {
-    let evals = {};
-    db.filter(x => x.estudiante === est).forEach(x => evals[x.rol] = x.nota_rol);
-    
-    const tieneProf = evals["Profesor"] !== undefined;
-    const tieneAsis = evals["Asistente Graduado"] !== undefined;
-    const tieneMon  = evals["Monitor"] !== undefined;
-
-    let notaFinal = null;
-    let completo = tieneProf && tieneAsis && tieneMon;
-
-    if(completo) {
-      notaFinal = (evals["Profesor"] * 0.50) + (evals["Asistente Graduado"] * 0.30) + (evals["Monitor"] * 0.20);
-    }
-
-    return { estudiante: est, evals, completo, notaFinal };
-  });
-
-  // Ordenar por nota final descendente
-  filas.sort((a,b) => (b.notaFinal || 0) - (a.notaFinal || 0));
-
-  filas.forEach((f, i) => {
+  list.forEach((row, i) => {
     const pos = i + 1;
-    const rankClass = pos === 1 ? 'rank-1' : pos === 2 ? 'rank-2' : pos === 3 ? 'rank-3' : '';
-    const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
-    const medalClass = pos === 1 ? 'medal-1' : pos === 2 ? 'medal-2' : pos === 3 ? 'medal-3' : '';
+    const medal = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : pos;
+    const posClass = pos === 1 ? "medal-1" : pos === 2 ? "medal-2" : pos === 3 ? "medal-3" : "";
 
     const div = document.createElement("div");
-    div.className = `board-row ${rankClass}`;
+    div.className = "board-row";
     div.innerHTML = `
-      <div class="col-pos ${medalClass}">${medal}</div>
-      <div class="col-name">${f.estudiante.toUpperCase()}</div>
-      <div class="col-hide-mobile">${f.evals["Profesor"] ? f.evals["Profesor"].toFixed(2) : '—'}</div>
-      <div class="col-hide-mobile">${f.evals["Asistente Graduado"] ? f.evals["Asistente Graduado"].toFixed(2) : '—'}</div>
-      <div class="col-hide-mobile">${f.evals["Monitor"] ? f.evals["Monitor"].toFixed(2) : '—'}</div>
-      <div class="col-hide-mobile"><span class="badge-status ${f.completo ? 'badge-ok' : 'badge-pending'}">${f.completo ? 'COMPLETO' : 'PENDIENTE'}</span></div>
-      <div class="col-final">${f.notaFinal !== null ? f.notaFinal.toFixed(3) : '—'}</div>
+      <div class="col-pos ${posClass}">${medal}</div>
+      <div class="col-team">${row.team.toUpperCase()}</div>
+      <div class="col-score ${pos === 1 ? 'score-1' : ''}">${Number(row.score).toLocaleString("es")} pts</div>
+      <div style="font-family:'Share Tech Mono'; font-size:.65rem; color:var(--dim); text-align:right;">${row.updated || 'Hoy'}</div>
     `;
-    board.appendChild(div);
+    body.appendChild(div);
   });
 }
 
-// ── CONFIGURACIÓN SUPABASE MODAL ──
-function openConfig() {
-  document.getElementById("cfgUrl").value = localStorage.getItem("sp_url") || "";
-  document.getElementById("cfgKey").value = localStorage.getItem("sp_key") || "";
-  document.getElementById("cfgModal").style.display = "flex";
-}
+function openConfig() { document.getElementById("cfgModal").style.display = "flex"; }
 function closeConfig() { document.getElementById("cfgModal").style.display = "none"; }
 function saveConfig() {
   localStorage.setItem("sp_url", document.getElementById("cfgUrl").value.trim());
   localStorage.setItem("sp_key", document.getElementById("cfgKey").value.trim());
   initSupabase();
   closeConfig();
-  cargarDatos();
+  loadData();
 }
 </script>
 </body>
