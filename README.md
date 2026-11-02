@@ -8,4 +8,4 @@ Profesor: Alejandro Marañon
 
 Asistente Graduado: Andres Vargas
 
-Monitor: David Diaz
+Monitor: Juan Jose
